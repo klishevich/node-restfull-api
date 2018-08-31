@@ -20,15 +20,48 @@ const server = http.createServer((req, res) => {
     });
     req.on('end', () => {
         // buffer += decoder.end(); Seems we do not need that
-        res.end('Hello world!\n');
-        console.log(`Buffer ${buffer}`);
+
+        const chosenHandler = router[trimmedPath] || handlers.notFound;
+        const data = {
+            trimmedPath,
+            queryStringObj,
+            method,
+            headers,
+            payload: buffer
+        };
+        chosenHandler(data, (statusCode, payload) => {
+            statusCode = typeof(statusCode) === 'number' ? statusCode : 200;
+            payload = typeof(payload) === 'object' ? payload : {};
+            const payloadString = JSON.stringify(payload);
+            res.setHeader('Content-Type', 'application/json');
+            res.writeHead(statusCode);
+            res.end(payloadString);
+            console.log('Response', statusCode, payloadString);
+        });
+
         // console.log('Buffer JSON', JSON.parse(buffer));
     });
 
-    console.log(`Request received on path "${trimmedPath}" with method "${method}" and query "${JSON.stringify(queryStringObj)}"`);
-    console.log(`Request received headers ${JSON.stringify(headers)}`);
+    // console.log(`Request received on path "${trimmedPath}" with method "${method}" and query "${JSON.stringify(queryStringObj)}"`);
+    // console.log(`Request received headers ${JSON.stringify(headers)}`);
 });
 
 server.listen(3000, () => {
     console.log('Server listening on port 3000 now\n');
 });
+
+// DEFINE HANDLERS
+const handlers = {};
+
+// Sample handler
+handlers.sample = (data, callback) => {
+    callback(406, { name: 'sample handler'});
+}
+
+handlers.notFound = (data, callback) => {
+    callback(404);
+}
+
+const router = {
+    sample: handlers.sample
+}
