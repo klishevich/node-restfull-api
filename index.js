@@ -1,6 +1,7 @@
 const http = require('http');
 const url = require('url');
 const StringDecoder = require('string_decoder').StringDecoder;
+const config = require('./config');
 
 const server = http.createServer((req, res) => {
     const parsedUrl = url.parse(req.url, true);
@@ -46,8 +47,8 @@ const server = http.createServer((req, res) => {
     // console.log(`Request received headers ${JSON.stringify(headers)}`);
 });
 
-server.listen(3000, () => {
-    console.log('Server listening on port 3000 now\n');
+server.listen(config.port, () => {
+    console.log(`Server listening on port ${config.port} in config.envName ${config.envName}\n`);
 });
 
 // DEFINE HANDLERS
